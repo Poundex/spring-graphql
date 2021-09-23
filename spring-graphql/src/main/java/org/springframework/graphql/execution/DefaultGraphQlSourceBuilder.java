@@ -59,10 +59,15 @@ class DefaultGraphQlSourceBuilder implements GraphQlSource.Builder {
 
 	private final List<Instrumentation> instrumentations = new ArrayList<>();
 
+	private final GraphQlSchemaFactory schemaFactory;
+	
 	private Consumer<GraphQL.Builder> graphQlConfigurers = (builder) -> {
 	};
-
-
+	
+	public DefaultGraphQlSourceBuilder(GraphQlSchemaFactory schemaFactory) {
+		this.schemaFactory = schemaFactory;
+	}
+	
 	@Override
 	public GraphQlSource.Builder schemaResources(Resource... resources) {
 		this.schemaResources.addAll(Arrays.asList(resources));
@@ -108,7 +113,7 @@ class DefaultGraphQlSourceBuilder implements GraphQlSource.Builder {
 		RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
 		this.runtimeWiringConfigurers.forEach(configurer -> configurer.configure(runtimeWiringBuilder));
 
-		GraphQLSchema schema = new SchemaGenerator().makeExecutableSchema(registry, runtimeWiringBuilder.build());
+		GraphQLSchema schema = schemaFactory.getSchema(registry, runtimeWiringBuilder.build());
 		schema = applyTypeVisitors(schema);
 
 		GraphQL.Builder builder = GraphQL.newGraphQL(schema);

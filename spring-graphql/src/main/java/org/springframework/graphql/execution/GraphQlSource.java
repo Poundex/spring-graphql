@@ -55,13 +55,17 @@ public interface GraphQlSource {
 	 */
 	GraphQLSchema schema();
 
+	static Builder builder() {
+		return new DefaultGraphQlSourceBuilder(new DefaultGraphQlSchemaFactory());
+	}
+	
 	/**
 	 * Return a builder for a {@link GraphQlSource} given input for the initialization of
 	 * {@link GraphQL} and {@link graphql.schema.GraphQLSchema}.
 	 * @return a builder for a GraphQlSource
 	 */
-	static Builder builder() {
-		return new DefaultGraphQlSourceBuilder();
+	static Builder builder(GraphQlSchemaFactory schemaFactory) {
+		return new DefaultGraphQlSourceBuilder(schemaFactory);
 	}
 
 	/**

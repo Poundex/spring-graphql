@@ -37,10 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.graphql.data.method.annotation.support.AnnotatedDataFetcherConfigurer;
-import org.springframework.graphql.execution.DataFetcherExceptionResolver;
-import org.springframework.graphql.execution.GraphQlSource;
-import org.springframework.graphql.execution.MissingSchemaException;
-import org.springframework.graphql.execution.RuntimeWiringConfigurer;
+import org.springframework.graphql.execution.*;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for creating a
@@ -64,6 +61,7 @@ public class GraphQlAutoConfiguration {
 
 	@Bean
 	public GraphQlSource graphQlSource(ResourcePatternResolver resourcePatternResolver, GraphQlProperties properties,
+			GraphQlSchemaFactory schemaFactory,
 			ObjectProvider<DataFetcherExceptionResolver> exceptionResolversProvider,
 			ObjectProvider<Instrumentation> instrumentationsProvider,
 			ObjectProvider<GraphQlSourceBuilderCustomizer> sourceCustomizers,
@@ -71,7 +69,7 @@ public class GraphQlAutoConfiguration {
 
 		List<Resource> schemaResources = resolveSchemaResources(resourcePatternResolver, properties.getSchema().getLocations(),
 				properties.getSchema().getFileExtensions());
-		GraphQlSource.Builder builder = GraphQlSource.builder()
+		GraphQlSource.Builder builder = GraphQlSource.builder(schemaFactory)
 				.schemaResources(schemaResources.toArray(new Resource[0]))
 				.exceptionResolvers(exceptionResolversProvider.orderedStream().collect(Collectors.toList()))
 				.instrumentation(instrumentationsProvider.orderedStream().collect(Collectors.toList()));
@@ -83,6 +81,12 @@ public class GraphQlAutoConfiguration {
 		catch (MissingSchemaException exc) {
 			throw new InvalidSchemaLocationsException(properties.getSchema().getLocations(), resourcePatternResolver, exc);
 		}
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(GraphQlSchemaFactory.class)
+	public GraphQlSchemaFactory defaultSchemaFactory() {
+		return new DefaultGraphQlSchemaFactory();
 	}
 
 	private List<Resource> resolveSchemaResources(ResourcePatternResolver resolver, String[] schemaLocations, String[] fileExtensions) {
