@@ -34,7 +34,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
  */
 public class DefaultBatchLoaderRegistryTests {
 
-	private final DefaultBatchLoaderRegistry batchLoaderRegistry = new DefaultBatchLoaderRegistry();
+	private final BatchLoaderRegistry batchLoaderRegistry = new DefaultBatchLoaderRegistry();
 
 	private final DataLoaderRegistry dataLoaderRegistry = DataLoaderRegistry.newRegistry().build();
 
@@ -65,9 +65,7 @@ public class DefaultBatchLoaderRegistryTests {
 		String name = "myLoader";
 		StatisticsCollector collector = new NoOpStatisticsCollector();
 
-		this.batchLoaderRegistry
-				.forTypePair(String.class, Book.class)
-				.withName(name)
+		this.batchLoaderRegistry.forName(name)
 				.withOptions(options -> options.setStatisticsCollector(() -> collector))
 				.registerBatchLoader((keys, environment) -> Flux.empty());
 
